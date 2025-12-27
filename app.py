@@ -1,12 +1,13 @@
 import streamlit as st
 import pandas as pd
 import google.generativeai as genai
+import time
 
 # 1. 페이지 설정
-st.set_page_config(page_title="TOP SECRET OF JUNGANG", page_icon="💖")
+st.set_page_config(page_title="TOP SECRET", page_icon="🕵️", layout="centered")
 
 # 2. 제목 꾸미기
-st.title("🏫 1급 기밀 사건 : 중앙중 도둑 검거 계획에 당신의 도움이 필요합니다")
+st.title("🏫 중앙중 도둑 검거 계획에 당신의 도움이 필요합니다")
 st.write("저는 중앙중의 대도(大盜)를 잡기 위해 비밀조직으로부터 연락을 받고 온 탐정입니다.\n2025년 12월...꽤나 오래전부터 학생들의 소중한 '이것'을 훔쳐온 도둑이 바로 이 학교 내부에 있다는걸 밝혀냈습니다. \n교직원분들꼐서도 용의자로 지목되는것은 당연합니다...이 사건은 1급 기밀로 조사가 이루어지기 때문에 안심하십시오. 만약 범인이 아니시라면 보내드리도록 하겠습니다.")
 
 # 3. 비밀번호(API 키) 가져오기
