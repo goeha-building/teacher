@@ -59,7 +59,7 @@ def js_scroll_top():
         height=0
     )
 
-@st.cache_data
+@st.cache_data(ttl=600) 
 def load_data():
     try:
         df = pd.read_csv(SHEET_URL)
@@ -95,7 +95,7 @@ if st.session_state.step == 0:
     st.write("---")
     st.write("### 🚨 신원 확인")
     
-    input_name = st.text_input("성함을 정확하게 입력해 주십시오 (외자 이름은 성과 이름을 띄우십시오)", placeholder="입력 후 ENTER")
+    input_name = st.text_input("성함을 정확하게 입력해 주십시오. (외자 이름은 성과 이름을 띄우시고 동명이인은 이름 뒤 과목명을 붙이십시오 예: 홍길동 역사)", placeholder="입력 후 ENTER")
     
     if input_name:
         input_name = input_name.strip()
