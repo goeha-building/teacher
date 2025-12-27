@@ -13,35 +13,7 @@ st.set_page_config(page_title="TOP SECRET OF JUNGANG", page_icon="🕵️", layo
 
 # 배경화면 변경 함수 (각 단계별로 분위기 전환)
 def set_bg(image_file):
-    try:
-        # 이미지를 읽어서 배경으로 까는 CSS 해킹
-        import base64
-        with open(image_file, "rb") as f:
-            data = f.read()
-        b64 = base64.b64encode(data).decode()
-        st.markdown(
-            f"""
-            <style>
-            .stApp {{
-                background-image: url("data:image/jpg;base64,{b64}");
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                background-attachment: fixed;
-            }}
-            /* 모바일 가독성을 위해 흰색 반투명 박스 추가 */
-            .stMainBlockContainer {{
-                background-color: rgba(255, 255, 255, 0.85);
-                padding: 20px;
-                border-radius: 15px;
-                margin-top: 20px;
-            }}
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-    except FileNotFoundError:
-        pass # 파일 없으면 그냥 흰 배경
+    pass
 
 # 스크롤 긴장감을 위한 빈 공간 함수
 def spacer(height=50):
@@ -67,6 +39,28 @@ except Exception:
 SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGKogkCFcPfKPdqsG9FAywjX61yoGh4CE_mizBxNucuCKL5Btzd2Ndppe8L9-a1J5H4FalkvT1RVA4/pub?output=csv"
 
 @st.cache_data
+
+def js_scroll_top():
+    # 자바스크립트로 강제 스크롤 명령을 내리는 함수
+    components.html(
+        """
+            <script>
+                // 0.1초 후에 강제로 맨 위로 올려버림
+                setTimeout(function(){
+                    window.parent.scrollTo({top: 0, behavior: 'instant'});
+                    
+                    // 혹시 모르니 다른 스크롤 박스들도 다 올려버림
+                    var elements = window.parent.document.querySelectorAll('*');
+                    for (var i = 0; i < elements.length; i++) {
+                        if (elements[i].scrollTop > 0) {
+                            elements[i].scrollTop = 0;
+                        }
+                    }
+                }, 100);
+            </script>
+        """,
+        height=0
+    )
 def load_data():
     try:
         df = pd.read_csv(SHEET_URL)
@@ -89,7 +83,7 @@ if st.session_state.step == 0:
     col1, col2 = st.columns([1, 2])
     with col1:
         try:
-            st.image("detective1.jpg", use_container_width=True)
+            st.image("detective1.png", use_container_width=True)
         except:
             st.write("🕵️ (탐정 이미지)")
             
@@ -126,8 +120,12 @@ if st.session_state.step == 0:
                 탐정 말투로 매우 당황하며, 이 선생님의 능력과 인품을 3~4줄로 극찬해줘.
                 "이런 분을 의심하다니 내 불찰이군..." 같은 느낌으로 시작해.
                 """
-                model = genai.GenerativeModel('gemini-2.5-flash')
+            try:
+                model = genai.GenerativeModel('gemini-1.5-flash') # 모델명 변경!
                 response = model.generate_content(prompt)
+            except Exception as e:
+                st.error("접속자가 너무 많아 탐정이 기절했습니다. 잠시 후 다시 시도해주세요.")
+                st.stop()
                 
                 # 데이터 저장 후 다음 단계로
                 st.session_state.teacher_name = input_name
@@ -146,7 +144,7 @@ elif st.session_state.step == 1:
     col1, col2 = st.columns([1, 2])
     with col1:
         try:
-            st.image("detective2.jpg", caption="!!!", use_container_width=True) # 놀란 탐정
+            st.image("detective2.png", caption="!!!", use_container_width=True) # 놀란 탐정
         except:
             st.header("😲")
 
@@ -169,10 +167,7 @@ elif st.session_state.step == 2:
     set_bg("bg_school.jpg")
     
     st.title("📞 띠리리리리링 따르르릉땡띵 링딩동동!!!!!!!!")
-    try:
-        st.image("detective3.jpg", width=200) # 비장한 탐정
-    except:
-        pass
+    
 
     st.error("잠시만요 선생님. 본부에서 연락이 왔습니다...")
     st.write("범인이 누군지 밝혀내었다고 합니다...위치까지 알아냈다는군요!")
@@ -218,18 +213,7 @@ elif st.session_state.step == 2:
 # [STEP 3] 반전 & 검거 완료 (배경: 학생들 환호)
 # ==========================================
 elif st.session_state.step == 3:
-
-    components.html(
-        """
-            <script>
-                var viewContainer = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
-                if (viewContainer) {
-                    viewContainer.scrollTop = 0;
-                }
-            </script>
-        """,
-        height=0
-    )
+    js_scroll_top()
         
     set_bg("bg_cheer.jpg") # 환호하는 배경
     
@@ -237,6 +221,10 @@ elif st.session_state.step == 3:
     st.snow() # 눈(꽃가루) 효과!
     
     st.title("🎉 검거 완료 : 당신은 체포되었습니다!")
+    try:
+        st.image("detective3.png", width=200) # 비장한 탐정
+    except:
+        pass
     
     st.markdown(f"""
     <div style='text-align: center;'>
