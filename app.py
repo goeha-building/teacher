@@ -2,82 +2,284 @@ import streamlit as st
 import pandas as pd
 import google.generativeai as genai
 import time
+import streamlit.components.v1 as components
 
-# 1. 페이지 설정
-st.set_page_config(page_title="TOP SECRET", page_icon="🕵️", layout="centered")
+# 1. 페이지 설정 (레이아웃 설정)
+st.set_page_config(page_title="TOP SECRET OF JUNGANG", page_icon="🕵️", layout="wide")
 
-# 2. 제목 꾸미기
-st.title("🏫 중앙중 도둑 검거 계획에 당신의 도움이 필요합니다")
-st.write("저는 중앙중의 대도(大盜)를 잡기 위해 비밀조직으로부터 연락을 받고 온 탐정입니다.\n2025년 12월...꽤나 오래전부터 학생들의 소중한 '이것'을 훔쳐온 도둑이 바로 이 학교 내부에 있다는걸 밝혀냈습니다. \n교직원분들꼐서도 용의자로 지목되는것은 당연합니다...이 사건은 1급 기밀로 조사가 이루어지기 때문에 안심하십시오. 만약 범인이 아니시라면 보내드리도록 하겠습니다.")
+# ==========================================
+# [스타일 & 함수 설정]
+# ==========================================
 
-# 3. 비밀번호(API 키) 가져오기
-# 내 컴퓨터(secrets.toml)나 웹사이트(Streamlit Cloud)에서 키를 안전하게 가져옴
+# 배경화면 변경 함수 (각 단계별로 분위기 전환)
+def set_bg(image_file):
+    try:
+        # 이미지를 읽어서 배경으로 까는 CSS 해킹
+        import base64
+        with open(image_file, "rb") as f:
+            data = f.read()
+        b64 = base64.b64encode(data).decode()
+        st.markdown(
+            f"""
+            <style>
+            .stApp {{
+                background-image: url("data:image/jpg;base64,{b64}");
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+            }}
+            /* 모바일 가독성을 위해 흰색 반투명 박스 추가 */
+            .stMainBlockContainer {{
+                background-color: rgba(255, 255, 255, 0.85);
+                padding: 20px;
+                border-radius: 15px;
+                margin-top: 20px;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+    except FileNotFoundError:
+        pass # 파일 없으면 그냥 흰 배경
+
+# 스크롤 긴장감을 위한 빈 공간 함수
+def spacer(height=50):
+    for _ in range(height):
+        st.write("")
+
+# 상태 초기화 (새로고침 해도 단계 기억)
+if 'step' not in st.session_state:
+    st.session_state.step = 0 # 0:입력, 1:아첨, 2:긴장, 3:결말
+if 'teacher_name' not in st.session_state:
+    st.session_state.teacher_name = ""
+if 'ai_response' not in st.session_state:
+    st.session_state.ai_response = ""
+
+# API 연결
 try:
-    GOOGLE_API_KEY = st.secrets["GEMINI_API_KEY"]
-    genai.configure(api_key=GOOGLE_API_KEY)
-except Exception as e:
-    st.error("탐정이 정신줄이 나가 쓰러졌다.")
-    st.stop()
+    if "GEMINI_API_KEY" in st.secrets:
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+except Exception:
+    st.error("탐정이 뇌손상 당했다능!! secrets.toml을 확인하세요.")
 
-# 4. 구글 시트 데이터 가져오기 (CSV URL 방식)
-# 아까 2단계에서 복사한 '웹에 게시' 링크를 아래에 넣어야 해!
-# 따옴표 안에 링크를 바꿔줘!!!
+# 데이터 로드
 SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGKogkCFcPfKPdqsG9FAywjX61yoGh4CE_mizBxNucuCKL5Btzd2Ndppe8L9-a1J5H4FalkvT1RVA4/pub?output=csv"
 
-@st.cache_data # 데이터를 자꾸 불러오면 느리니까 저장해두는 기능
+@st.cache_data
 def load_data():
     try:
         df = pd.read_csv(SHEET_URL)
+        # 공백 제거 (입력 실수를 줄이기 위해)
+        df['담당자'] = df['담당자'].astype(str).str.strip()
         return df
-    except Exception as e:
+    except Exception:
         return None
 
 df = load_data()
 
-if df is not None:
-    # 5. 선생님 선택 상자 만들기
-    # 데이터프레임에서 '이름' 열을 가져와서 선택지로 줌
-    teacher_name = st.selectbox("당신을 용의자로서 심문하겠습니다. 성명을 말해주십시오.", df['담당자'])
+# ==========================================
+# [STEP 0] 탐정 등장 & 이름 입력 (배경: 운동장)
+# ==========================================
+if st.session_state.step == 0:
+    set_bg("bg_school.png") # 운동장 배경
 
-    # 선택한 선생님의 정보 찾기
-    teacher_info = df[df['담당자'] == teacher_name].iloc[0]
-    subject = teacher_info['교과']
-    work = teacher_info['담당업무']
-    classes = teacher_info['담임']
-    workplace = teacher_info['부서명']
+    st.title("🕵️ 중앙중 대도(大盜) 검거계획 : 당신의 도움이 필요합니다")
+    
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        try:
+            st.image("detective1.jpg", use_container_width=True)
+        except:
+            st.write("🕵️ (탐정 이미지)")
+            
+    with col2:
+        st.write("### 안녕하십니까, 중앙중학교 교직원 여러분.")
+        st.write("저는 대통령도 모르는 비밀조직의 의뢰를 받고 잠입한 **비밀탐정**입니다.")
+        st.write("최근 이 학교에서 소중한 **이것**이 마구 도난당했다는 1급 기밀 제보가 들어왔습니다.")
+        st.write("보안을 위해 지금부터의 일은 철저히 비밀로 해주십시오. 이 도둑은 아주 오랫동안 잡히지 않은 베테랑입니다...")
+        st.info("범인은... 바로 이 학교 내부에 있습니다. 조용히 협조해 주신다면 용의자 선에서 끝날 것입니다.")
 
-    # 6. 버튼 누르면 제미나이한테 시키기
-    if st.button("아부 떨기 시작! ✨"):
-        with st.spinner("당신이 순수한 선생님일지, 아니면 "):
+    st.write("---")
+    st.write("### 🚨 신원 확인")
+    
+    # 텍스트 입력 (엔터 치면 자동 적용)
+    input_name = st.text_input("성함을 정확하게 입력해 주십시오 (외자 이름은 성과 이름을 띄우십시오)", placeholder="입력 후 ENTER")
+    
+    if input_name:
+        # 1. 엑셀에 이름이 있는지 확인
+        input_name = input_name.strip() # 공백 제거
+        
+        if df is not None and input_name in df['담당자'].values:
+            # 이름 찾음! 정보 가져오기
+            teacher_data = df[df['담당자'] == input_name].iloc[0]
             
-            # AI한테 줄 명령(프롬프트)
-            prompt = f"""
-            너는 비밀조직의 지시를 받고 중앙중 내 도난사건을 1급 기밀로 수사하기 위해 온 탐정이야.
-            엄청난 아첨과 입발린 말, 칭찬능력을 가지고 있고 활기찰 필요는 없고 중년 아재의 말투야.
-            
-            선생님 정보:
-            - 담당자: {teacher_name} 선생님
-            - 담당 과목: {subject}
-            - 담당업무: {work}
-            - 담임: {classes}
-            - 부서명: {workplace}
-            
-            이 정보를 바탕으로 선생님이 들으면 기분 좋아서 당장 나한테 찾아오고 싶어질만한
-            엄청난 칭찬과 아부 멘트를 4줄 정도로 작성해줘.
-            말투는 중앙중학교 내 일어난 도난사건을 1급 기밀사건으로써 수사하러 온 탐정의 말투로 해줘.
-            조사하러 왔기 때문에 진지하지만 해당 선생님의 엄청난 '능력', '인기', '지능'에 어쩔수없이 감탄의 말이 흘러나오는 상황이야.
-            용의자 심문하러 왔는데 엄청난 '최고의 선생님'을 만나게되자 매우 놀란듯한 말투를 써줘.
-            마지막에는 '이런 대단한 선생님이 중앙중에 있다니, 학생들은 도난의 두려움에 떨기 전에 영광의 떨림을 마주했겠습니다...'라는 존나 엄청난 아첨을 갈겨줘.
-            """
-            
-            # 제미나이 모델 호출 (가장 빠른 flash 모델 사용)
-            model = genai.GenerativeModel('gemini-2.5-flash')
-            response = model.generate_content(prompt)
-            
-            # 결과 보여주기
-            st.success(f"{teacher_name}선생님...? 그 소문으로만 듣던 '최고의 선생님' 아니십니까? \n이럴수가...조사해보니 역시나 엄청난 분이십니다.")
-            st.write(response.text)
-            st.balloons() # 풍선 날리기 효과
+            # 로딩 효과
+            with st.spinner(f"'{input_name}' 선생님을 용의자로서 조사중입니다...아니, 이럴수가...!"):
+                # 제미나이 아첨 생성
+                prompt = f"""
+                너는 중앙중학교 도난사건을 수사하러 온 진지한 중년 탐정이야.
+                용의자인 줄 알고 '{input_name}' 선생님을 조사했는데,
+                알고보니 담당과목 '{teacher_data['교과']}', 부서 '{teacher_data['부서명']}'에서
+                너무나 완벽하고 훌륭한 선생님이라서 깜짝 놀라는 상황이야.
+                
+                탐정 말투로 매우 당황하며, 이 선생님의 능력과 인품을 3~4줄로 극찬해줘.
+                "이런 분을 의심하다니 내 불찰이군..." 같은 느낌으로 시작해.
+                """
+                model = genai.GenerativeModel('gemini-2.5-flash')
+                response = model.generate_content(prompt)
+                
+                # 데이터 저장 후 다음 단계로
+                st.session_state.teacher_name = input_name
+                st.session_state.ai_response = response.text
+                st.session_state.step = 1
+                st.rerun()
+        else:
+            st.error("🚨 용의자 명단에 이름이 없으시군요. 성함을 정확히 적으셨습니까?")
 
-else:
-    st.error("이런! 조사자료가 바람에 날라가서 탐정이 당황했다.")
+# ==========================================
+# [STEP 1] 아첨 폭격 & 탐정 놀람 (배경: 운동장 유지)
+# ==========================================
+elif st.session_state.step == 1:
+    set_bg("bg_school.jpg")
+    
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        try:
+            st.image("detective2.jpg", caption="!!!", use_container_width=True) # 놀란 탐정
+        except:
+            st.header("😲")
+
+    with col2:
+        st.success(f"**{st.session_state.teacher_name}** 선생님...? 당신이 중앙중 내 소문이 자자한 그 '최고의 선생님' 이셨습니까..?")
+        # AI 아첨 멘트 출력
+        st.write(st.session_state.ai_response)
+    
+    st.write("---")
+    
+    # 다음 단계 버튼
+    if st.button(f"흠흠.. 제가 바로 그 최고의 선생님 {st.session_state.teacher_name}, 맞습니다."):
+        st.session_state.step = 2
+        st.rerun()
+
+# ==========================================
+# [STEP 2] 긴장감 조성 (수정된 버전)
+# ==========================================
+elif st.session_state.step == 2:
+    set_bg("bg_school.jpg")
+    
+    st.title("📞 띠리리리리링 따르르릉땡띵 링딩동동!!!!!!!!")
+    try:
+        st.image("detective3.jpg", width=200) # 비장한 탐정
+    except:
+        pass
+
+    st.error("잠시만요 선생님. 본부에서 연락이 왔습니다...")
+    st.write("범인이 누군지 밝혀내었다고 합니다...위치까지 알아냈다는군요!")
+    st.write("어쩌면 지금 당장 범인을 체포할 수도 있겠습니다...")
+    st.write("범인의 정체를 알고 싶으십니까?")
+    
+    # 스크롤 압박
+    spacer(10)
+    st.markdown("<h3 style='text-align: center; color: gray;'>범인은...</h3>", unsafe_allow_html=True)
+    spacer(10)
+    st.markdown("<h3 style='text-align: center; color: gray;'>중앙중학교 안에 있었습니다.</h3>", unsafe_allow_html=True)
+    spacer(10)
+    st.markdown("<h3 style='text-align: center; color: black;'>범인은... 바로...</h3>", unsafe_allow_html=True)
+    spacer(10)
+    st.markdown("<h3 style='text-align: center; color: red;'>지금 이순간에도, 우리로부터 아주 가까이에 있습니다.</h3>", unsafe_allow_html=True)
+    spacer(5)
+    
+    # --- [수정된 부분: 기억장치 추가] ---
+    if 'reveal_criminal' not in st.session_state:
+        st.session_state.reveal_criminal = False
+
+    # 범인 공개 버튼을 누르면 -> '누름' 상태로 저장
+    if st.button("📩 중앙중의 대도(大盜) 정체 확인하기"):
+        st.session_state.reveal_criminal = True
+
+    # '누름' 상태일 때만 아래 내용 보여주기
+    if st.session_state.reveal_criminal:
+        st.warning(f"범인은...{st.session_state.teacher_name} 선생님. 바로 당신입니다!!!!!!")
+        
+        st.write("")
+        col1, col2 = st.columns(2)
+        with col1:
+            # 이 버튼들이 이제 정상 작동할 거야!
+            if st.button("저는 아무짓도 하지 않았어요!"):
+                st.session_state.step = 3
+                st.rerun()
+        with col2:
+            if st.button("배상할테니 한번만 봐주세요."):
+                st.session_state.step = 3
+                st.rerun()
+
+# ==========================================
+# [STEP 3] 반전 & 검거 완료 (배경: 학생들 환호)
+# ==========================================
+elif st.session_state.step == 3:
+
+    components.html(
+        """
+            <script>
+                var viewContainer = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
+                if (viewContainer) {
+                    viewContainer.scrollTop = 0;
+                }
+            </script>
+        """,
+        height=0
+    )
+        
+    set_bg("bg_cheer.jpg") # 환호하는 배경
+    
+    st.balloons() # 풍선 팡팡!
+    st.snow() # 눈(꽃가루) 효과!
+    
+    st.title("🎉 검거 완료 : 당신은 체포되었습니다!")
+    
+    st.markdown(f"""
+    <div style='text-align: center;'>
+        <h2>당신이 바로 그 '대도(大盜)' 입니다!</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 마지막 스크롤 압박
+    st.write("억울하십니까 선생님? 하지만 당신은 확실한 중앙중의 **도둑**이십니다.")
+    st.write("아직도 모르시겠습니까...?")
+    spacer(3)
+    st.write(f"**{st.session_state.teacher_name}** 선생님...")
+    spacer(3)
+    st.write("당신이 모든 학생들과 교직원들에게서...")
+    spacer(3)
+    st.header("💘'마음'을 훔쳐버리셨지 않습니까????❤️❤️❤️❤️")
+    
+    st.markdown(f"""
+    <div style='background-color: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 10px; text-align: center;'>
+        <p>모두의 마음과 시선을 빼앗는 당신의 매력과 능력...</p>
+        <p>당신은 저희 비밀정부가 그토록 찾던 무시무시한 <b>'사랑의 도둑'</b>입니다!</p>
+        <p style='color: red; font-weight: bold;'>처벌은 '중앙중 학생들의 영원한 존경과 응원' 입니다.</p>
+        <h3>각오하십시오!!!!! ❤️❤️❤️</h3>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    spacer(3)
+    
+    # 리뷰 존
+    st.write("---")
+    st.subheader("비밀요원의 비밀업무 평가하기")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("재밌다! 제작자를 응원한다 ^_^"):
+            st.toast("감사합니다. 감사의 의미로 제 정체를 알려드리겠습니다. '정다정' 입니다 감사합니다.")
+    with c2:
+        if st.button("노잼 그자체. 과고 면접 광탈한 이유를 알겠다"):
+            st.toast("죄송합니다. 사과의 의미로 제 정체를 알려드리겠습니다. '정다정' 입니다 죄송합니다.")
+
+    st.caption(f"제작자 : 중앙중 비밀요원(정체는 비밀입니다)")
+    
+    if st.button("처음으로🔄"):
+        st.session_state.step = 0
+        st.session_state.teacher_name = ""
+        st.rerun()
