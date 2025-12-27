@@ -83,7 +83,7 @@ if st.session_state.step == 0:
     col1, col2 = st.columns([1, 2])
     with col1:
         try:
-            st.image("detective1.png", use_container_width=True)
+            st.image("detective1.png", width="stretch")
         except:
             st.write("🕵️ (탐정 이미지)")
             
@@ -141,10 +141,10 @@ if st.session_state.step == 0:
 elif st.session_state.step == 1:
     set_bg("bg_school.jpg")
     
-    col1, col2 = st.columns([1, 2])
+    col1, colwidth="stretch" = st.columns([1, 2])
     with col1:
         try:
-            st.image("detective2.png", caption="!!!", use_container_width=True) # 놀란 탐정
+            st.image("detective2.png", caption="!!!", width="stretch") # 놀란 탐정
         except:
             st.header("😲")
 
