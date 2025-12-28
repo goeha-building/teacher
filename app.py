@@ -116,7 +116,7 @@ if st.session_state.step == 0:
                 
                 # --- [여기가 형이 실수했던 부분!! 고쳤음!!] ---
                 try:
-                    model = genai.GenerativeModel('gemini-2.0-flash')
+                    model = genai.GenerativeModel('gemini-flash-latest')
                     response = model.generate_content(prompt)
                     
                     # 성공하면 여기서 바로 저장하고 넘어가야 함! (try 안으로 이사옴)
