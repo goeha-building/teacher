@@ -110,8 +110,9 @@ if st.session_state.step == 0:
                 알고보니 담당과목 '{teacher_data['교과']}', 부서 '{teacher_data['부서명']}'에서
                 너무나 완벽하고 훌륭한 선생님이라서 깜짝 놀라는 상황이야.
                 
-                탐정 말투로 매우 당황하며, 이 선생님의 능력과 인품을 3~4줄로 극찬해줘.
+                탐정 말투로 매우 당황하며, 이 선생님의 능력과 인품을 4~5줄로 극찬해줘.
                 "이런 분을 의심하다니 내 불찰이군..." 같은 느낌으로 시작해.
+                ()를 써서 생각을 표현하는 말투는 지양해줘. 엄청난 아첨을 한다는 생각으로 말해.
                 """
                 
                 # --- [여기가 형이 실수했던 부분!! 고쳤음!!] ---
@@ -126,7 +127,7 @@ if st.session_state.step == 0:
                     st.rerun()
                     
                 except Exception as e:
-                    st.error(f"🚨 긴급 에러 확인: {e}")
+                    st.error(f"갑자기 메테오가 떨어져 탐정이 기절했습니다. 당장 비밀요원의 치료가 필요합니다.")
                     st.stop()
                 # ---------------------------------------------
                 
@@ -152,7 +153,7 @@ elif st.session_state.step == 1:
     
     st.write("---")
     
-    if st.button(f"흠흠.. 제가 바로 그 최고의 선생님 {st.session_state.teacher_name}, 맞습니다."):
+    if st.button(f"흠흠.. 제가 바로 그 최고의 선생님 {st.session_state.teacher_name} 입니다."):
         st.session_state.step = 2
         st.rerun()
 
@@ -165,19 +166,22 @@ elif st.session_state.step == 2:
     st.title("📞 띠리리리리링 따르르릉땡띵 링딩동동!!!!!!!!")
 
     st.error("잠시만요 선생님. 본부에서 연락이 왔습니다...")
-    st.write("범인이 누군지 밝혀내었다고 합니다...위치까지 알아냈다는군요!")
-    st.write("어쩌면 지금 당장 범인을 체포할 수도 있겠습니다...")
-    st.write("범인의 정체를 알고 싶으십니까?")
+    st.write("범인이 누군지 밝혀내었다고 합니다!! 위치까지 알아냈다는군요!")
+    st.write("범인의 정체를 들었을땐 너무나 충격적이고 예상 밖이었습니다만...")
+    st.write("범인이 훔친 것이 '이것' 이라는 말을 들었을 땐 너무나 당연하다는 생각이 들었습니다, 하하")
+    st.write("어쩌면 지금 당장 범인을 체포할 수도 있겠습니다!!")
+    spacer(7)
+    st.write("범인의 정체를 알고 싶으십니까...?")
     
     spacer(10)
     st.markdown("<h3 style='text-align: center; color: gray;'>범인은...</h3>", unsafe_allow_html=True)
     spacer(10)
     st.markdown("<h3 style='text-align: center; color: gray;'>중앙중학교 안에 있었습니다.</h3>", unsafe_allow_html=True)
-    spacer(10)
-    st.markdown("<h3 style='text-align: center; color: black;'>범인은... 바로...</h3>", unsafe_allow_html=True)
-    spacer(10)
+    spacer(20)
+    st.markdown("<h3 style='text-align: center; color: red;'>범인은... 바로...</h3>", unsafe_allow_html=True)
+    spacer(30)
     st.markdown("<h3 style='text-align: center; color: red;'>지금 이순간에도, 우리로부터 아주 가까이에 있습니다.</h3>", unsafe_allow_html=True)
-    spacer(5)
+    spacer(10)
     
     if 'reveal_criminal' not in st.session_state:
         st.session_state.reveal_criminal = False
@@ -198,6 +202,10 @@ elif st.session_state.step == 2:
             if st.button("배상할테니 한번만 봐주세요."):
                 st.session_state.step = 3
                 st.rerun()
+        with col2:
+            if st.button("억울해요! 무고죄로 고소할게요!!"):
+                st.session_state.step = 3
+                st.rerun()
 
 # ==========================================
 # [STEP 3] 반전 & 검거 완료
@@ -215,31 +223,35 @@ elif st.session_state.step == 3:
     
     st.title("🎉 검거 완료 : 당신은 체포되었습니다!")
     try:
-        st.image("detective3.png", width=200)
+        st.image("detective3.png", width="stretch")
     except:
         pass
     
     st.markdown(f"""
     <div style='text-align: center;'>
-        <h2>당신이 바로 그 '대도(大盜)' 입니다!</h2>
+        <h2>{st.session_state.teacher_name} 선생님, 당신이 바로 그 '대도(大盜)' 입니다!</h2>
     </div>
     """, unsafe_allow_html=True)
     
     st.write("억울하십니까 선생님? 하지만 당신은 확실한 중앙중의 **도둑**이십니다.")
+    spacer(5)
     st.write("아직도 모르시겠습니까...?")
-    spacer(3)
+    spacer(5)
     st.write(f"**{st.session_state.teacher_name}** 선생님...")
-    spacer(3)
+    spacer(7)
     st.write("당신이 모든 학생들과 교직원들에게서...")
-    spacer(3)
-    st.header("💘'마음'을 훔쳐버리셨지 않습니까????❤️❤️❤️❤️")
+    spacer(15)
+    st.header("💘'마음'을 훔치셨지 않습니까????❤️❤️❤️❤️")
     
     st.markdown(f"""
     <div style='background-color: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 10px; text-align: center;'>
         <p>모두의 마음과 시선을 빼앗는 당신의 매력과 능력...</p>
-        <p>당신은 저희 비밀정부가 그토록 찾던 무시무시한 <b>'사랑의 도둑'</b>입니다!</p>
+        <p>중앙중의 모두가 {st.session_state.teacher_name}선생님에게서 헤어나오지 못하는 그야말로 초위기 상황이었습니다만...</p>
+        <p>이제 모든게 밝혀졌습니다.</p>
+        <p>당신은 저희 비밀조직이 그토록 찾던 무시무시한 <b>'❤️사랑의 도둑❤️'</b>입니다!</p>
+        <p>(여기서 감동받으셔야합니다.)</p>
         <p style='color: red; font-weight: bold;'>처벌은 '중앙중 학생들의 영원한 존경과 응원' 입니다.</p>
-        <h3>각오하십시오!!!!! ❤️❤️❤️</h3>
+        <h3>❤️❤️❤️각오하십시오!!!!! ❤️❤️❤️</h3>
     </div>
     """, unsafe_allow_html=True)
     
@@ -247,16 +259,21 @@ elif st.session_state.step == 3:
     
     st.write("---")
     st.subheader("비밀요원의 비밀업무 평가하기")
+    try:
+        st.image("평가저씨.jpg", width=400)
+    except:
+        pass
     
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("재밌다! 제작자를 응원한다 ^_^"):
-            st.toast("감사합니다. 감사의 의미로 제 정체를 알려드리겠습니다. '정다정' 입니다 감사합니다.")
+        if st.button("재밌다! 제작자를 응원한다~ ^_^"):
+            st.toast("감사합니다. 정진하는 비밀요원이 되겠습니다.")
     with c2:
         if st.button("노잼 그자체. 과고 면접 광탈한 이유를 알겠다"):
-            st.toast("죄송합니다. 사과의 의미로 제 정체를 알려드리겠습니다. '정다정' 입니다 죄송합니다.")
+            st.toast("죄송합니다. 반성하는 비밀요원이 되겠습니다.")
 
     st.caption(f"제작자 : 중앙중 비밀요원(정체는 비밀입니다)")
+    st.caption(f"평가내용은 절대 저장되거나 비밀조직의 손에 넘어가지 않습니다.")
     
     if st.button("처음으로🔄"):
         st.session_state.step = 0
