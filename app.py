@@ -154,7 +154,7 @@ elif st.session_state.step == 1:
     
     st.write("---")
     
-    if st.button(f"흠흠.. 제가 바로 그 최고의 선생님 {st.session_state.teacher_name} 입니다."):
+    if st.button(f"흠흠.. 제가 바로 그 최고의 선생님 '{st.session_state.teacher_name}' 입니다."):
         st.session_state.step = 2
         st.rerun()
 
