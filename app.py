@@ -203,10 +203,6 @@ elif st.session_state.step == 2:
             if st.button("배상할테니 한번만 봐주세요."):
                 st.session_state.step = 3
                 st.rerun()
-        with col2:
-            if st.button("억울해요! 무고죄로 고소할게요!!"):
-                st.session_state.step = 3
-                st.rerun()
 
 # ==========================================
 # [STEP 3] 반전 & 검거 완료
