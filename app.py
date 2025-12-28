@@ -244,7 +244,7 @@ elif st.session_state.step == 3:
     <div style='background-color: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 10px; text-align: center;'>
         <p>모두의 마음과 시선을 빼앗는 당신의 매력과 능력...</p>
         <p>중앙중의 모두가 {st.session_state.teacher_name}선생님에게서 헤어나오지 못하는 그야말로 초위기 상황이었습니다만...</p>
-        <p>이제 모든게 밝혀졌습니다.</p>
+        <p>이제야 모든게 밝혀졌습니다.</p>
         <p>당신은 저희 비밀조직이 그토록 찾던 무시무시한 <b>'❤️사랑의 도둑❤️'</b>입니다!</p>
         <p>(여기서 감동받으셔야합니다.)</p>
         <p style='color: red; font-weight: bold;'>처벌은 '중앙중 학생들의 영원한 존경과 응원' 입니다.</p>
