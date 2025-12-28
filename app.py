@@ -266,7 +266,7 @@ elif st.session_state.step == 3:
         if st.button("재밌다! 제작자를 응원한다~ ^_^"):
             st.toast("감사합니다. 정진하는 비밀요원이 되겠습니다.")
     with c2:
-        if st.button("노잼 그자체. 과고 면접 광탈한 이유를 알겠다"):
+        if st.button("노잼 그자체. 내 소중한 시간 물어내라!"):
             st.toast("죄송합니다. 반성하는 비밀요원이 되겠습니다.")
 
     st.caption(f"제작자 : 중앙중 비밀요원(정체는 비밀입니다)")
